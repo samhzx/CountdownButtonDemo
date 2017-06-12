@@ -48,18 +48,13 @@ static NSString *const kSaveTimeKey = @"kSaveTimeKey";
 - (void)updateTime{
     _second = _second - 1;
     if (_second <= 0) {
-        //退出定时器
-        dispatch_source_cancel(_timer);
-        //定时器设置为nil 第二次启动的时候通过懒加载再次启动timer
-        _timer = nil;
         //移除NSUserDefaults存放的时间
         [self.dfl removeObjectForKey:kSaveTimeKey];
-        self.enabled = YES;
         if (_finishCall) {
             [self setTitle:_finishCall(self) forState:UIControlStateNormal];
         }
         _second = _totalTime;
-        _fire = NO;
+        self.fire = NO;
     }else{
         //保存当前的倒计时到NSUserDefaults
         [self saveSecond];
@@ -103,7 +98,7 @@ static NSString *const kSaveTimeKey = @"kSaveTimeKey";
 }
 - (dispatch_source_t)timer{
     if (_timer == nil) {
-        _timer  = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
+        _timer  = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0));
         dispatch_source_set_timer(_timer, DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC,0);
         __weak typeof(self) WeakSelf = self;
         dispatch_source_set_event_handler(_timer, ^{
@@ -130,8 +125,13 @@ static NSString *const kSaveTimeKey = @"kSaveTimeKey";
         dispatch_resume(self.timer);
         self.enabled = NO;
     }else{
-        dispatch_source_cancel(_timer);
-        _timer = nil;
+        if (_timer) {
+            //退出定时器
+            dispatch_source_cancel(_timer);
+            //定时器设置为nil 第二次启动的时候通过懒加载再次启动timer
+            _timer = nil;
+        }
+        self.enabled = YES;
     }
 }
 @end

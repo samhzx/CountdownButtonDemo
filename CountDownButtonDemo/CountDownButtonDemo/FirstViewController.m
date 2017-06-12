@@ -52,7 +52,7 @@
     };
     [self.view addSubview:_countDownBtn];
     
-    _getCode.second = 20;
+//    _getCode.second = 20;
     _getCode.layer.borderColor = [UIColor orangeColor].CGColor;
     _getCode.layer.borderWidth = 1;
     _getCode.layer.cornerRadius = 5;
